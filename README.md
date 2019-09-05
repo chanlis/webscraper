@@ -2,7 +2,7 @@
 
 Parses fund holdings from [EDGAR](https://www.sec.gov/edgar/searchedgar/companysearch.html) given a ticker or CIK and writes the holding's name and value to a file.
 
-To get started, run the following command in the edgar folder with a CIK and filename for the output.
+To get started, run the following command in the project folder with a CIK and filename for the output.
 ```
 scrapy crawl edgar -a cik=[cik] -o [filename].csv
 ```
