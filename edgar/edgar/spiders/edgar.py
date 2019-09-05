@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import scrapy
-import sys
 
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -59,15 +58,3 @@ class EdgarSpider(scrapy.Spider):
                 'name': item.xpath('./nameofissuer/text()').get(),
                 'value': item.xpath('./value/text()').get()
             }
-
-# if __name__ == '__main__':
-#     if len(sys.argv) != 2:
-#         print('Usage: ./webscraper [CIK]')
-#
-#     cik = sys.argv[1]
-#     process = CrawlerProcess({
-#         'FEED_FORMAT': 'json',
-#         'FEED_URI': 'result.json'
-#     })
-#     process.crawl(Scraper, cik=cik)
-#     process.start
