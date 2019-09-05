@@ -5,6 +5,7 @@ import sys
 
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
+from scrapy.selector import Selector
 from urllib.parse import urlencode
 
 DOMAIN = 'https://www.sec.gov'
@@ -14,9 +15,8 @@ RESULTS = 'results'
 DOCUMENTS = 'documents'
 REPORT = 'report'
 
-class Scraper(scrapy.Spider):
+class EdgarSpider(scrapy.Spider):
     name = 'edgar'
-    # start_urls = ['https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001166559&owner=exclude']
     def __init__(self, cik='0001166559', *args, **kwargs):
         super(Scraper, self).__init__(*args, **kwargs)
         query_str = urlencode({
@@ -63,17 +63,20 @@ class Scraper(scrapy.Spider):
             row_data = row.css('td')
             if row_data:
                 type = row_data[col_index['type']].xpath('text()').get()
-                report_path = row_data[col_index['document']]
-                report_path = report_path.css('a::attr(href)').get()
-                report_path = report_path if report_path else ''
-                print('################', type, report_path)
-
-                if type.lower() == 'information table' and report_path.find('xml'):
+                document = row_data[col_index['document']].css('a')
+                document_text = document.xpath('text()').get() if document else ''
+                if type.lower() == 'information table' and 'xml' in document_text:
                     self.state = REPORT
+                    report_path = document.xpath('@href').get()
                     yield response.follow(DOMAIN + report_path, self.parse)
 
     def parse_report(self, response):
-        pass
+        report = Selector(text=response.text)
+        for item in report.xpath('//infotable'):
+            yield {
+                'name': item.xpath('./nameofissuer/text()').get(),
+                'value': item.xpath('./value/text()').get()
+            }
 
 # if __name__ == '__main__':
 #     if len(sys.argv) != 2:
